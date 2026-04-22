@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EngagementEngine — Project Report</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3e;
+    --accent: #7c6af7;
+    --accent2: #f7a26a;
+    --accent3: #6af7c0;
+    --text: #e8e8f0;
+    --muted: #7070a0;
+    --pass: #6af7c0;
+    --fail: #f76a6a;
+    --warn: #f7d96a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 32px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  header {
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-tag::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 40px;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .meta-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 48px 0;
+  }
+
+  .stat {
+    background: var(--surface);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+  .stat:hover { background: var(--surface2); }
+
+  .stat-num {
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -2px;
+  }
+  .stat-num.green { color: var(--pass); }
+  .stat-num.purple { color: var(--accent); }
+  .stat-num.orange { color: var(--accent2); }
+  .stat-num.red { color: var(--fail); }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* Sections */
+  section {
+    padding: 64px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  /* Class overview */
+  .class-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .class-header {
+    background: var(--surface2);
+    padding: 20px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .class-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .badge-class { background: #7c6af722; color: var(--accent); border: 1px solid #7c6af744; }
+  .badge-method { background: #f7a26a22; color: var(--accent2); border: 1px solid #f7a26a44; }
+  .badge-property { background: #6af7c022; color: var(--accent3); border: 1px solid #6af7c044; }
+
+  .class-body {
+    padding: 28px;
+  }
+
+  .class-desc {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #b0b0d0;
+    margin-bottom: 28px;
+  }
+
+  /* Methods table */
+  .method-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .method-row {
+    display: grid;
+    grid-template-columns: 240px 1fr auto;
+    gap: 20px;
+    align-items: start;
+    padding: 16px 20px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.2s;
+  }
+  .method-row:hover { border-color: var(--accent); }
+
+  .method-sig {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent2);
+    line-height: 1.5;
+  }
+
+  .method-desc {
+    font-size: 14px;
+    color: #9090b8;
+    line-height: 1.6;
+  }
+
+  /* Tier table */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .tier-card {
+    padding: 24px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .tier-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .tier-card.newbie::before { background: var(--muted); }
+  .tier-card.influencer::before { background: var(--accent); }
+  .tier-card.icon::before { background: var(--accent2); }
+
+  .tier-name {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .tier-card.newbie .tier-name { color: var(--muted); }
+  .tier-card.influencer .tier-name { color: var(--accent); }
+  .tier-card.icon .tier-name { color: var(--accent2); }
+
+  .tier-range {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Test results */
+  .test-group {
+    margin-bottom: 32px;
+  }
+
+  .test-group-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .test-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .test-item {
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+    animation: fadeUp 0.4s ease both;
+  }
+  .test-item:hover { border-color: var(--border); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .test-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--pass);
+    flex-shrink: 0;
+  }
+  .test-dot.warn { background: var(--warn); }
+
+  .test-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .test-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--pass);
+    letter-spacing: 1px;
+  }
+  .test-status.warn { color: var(--warn); }
+
+  /* Code block */
+  .code-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .code-header {
+    background: var(--surface2);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .code-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+  .code-dot:nth-child(1) { background: #f76a6a; }
+  .code-dot:nth-child(2) { background: var(--warn); }
+  .code-dot:nth-child(3) { background: var(--pass); }
+
+  .code-filename {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  pre {
+    padding: 28px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    color: #c0c0e0;
+  }
+
+  .kw { color: var(--accent); }
+  .fn { color: var(--accent2); }
+  .st { color: var(--pass); }
+  .cm { color: var(--muted); font-style: italic; }
+  .nm { color: #e0b0f0; }
+  .nb { color: #f0d080; }
+
+  /* Issues */
+  .issue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .issue-card {
+    display: grid;
+    grid-template-columns: 4px 1fr;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .issue-stripe { background: var(--warn); }
+  .issue-stripe.info { background: var(--accent); }
+
+  .issue-body { padding: 20px 24px; }
+
+  .issue-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--warn);
+  }
+  .issue-title.info { color: var(--accent); }
+
+  .issue-desc {
+    font-size: 14px;
+    color: #9090b8;
+    line-height: 1.6;
+  }
+
+  /* Footer */
+  footer {
+    padding: 48px 0;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .progress-bar-wrap {
+    height: 6px;
+    background: var(--border);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+  }
+
+  @media (max-width: 700px) {
+    .stats-bar { grid-template-columns: repeat(2, 1fr); }
+    .method-row { grid-template-columns: 1fr; }
+    .tier-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <div class="header-tag">Project Report</div>
+    <h1>Engagement<span>Engine</span></h1>
+    <p class="subtitle">engagement_engine.py &nbsp;·&nbsp; test_code.py &nbsp;·&nbsp; Python 3.12</p>
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Course</span>
+        <span class="meta-value">CS325</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Semester</span>
+        <span class="meta-value">Spring 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Framework</span>
+        <span class="meta-value">pytest</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Language</span>
+        <span class="meta-value">Python 3.12</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-num green">25</span>
+      <span class="stat-label">Total Tests</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num green">25</span>
+      <span class="stat-label">Passing</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num purple">4</span>
+      <span class="stat-label">Methods Covered</span>
+    </div>
+    <div class="stat">
+      <span class="stat-num orange">2</span>
+      <span class="stat-label">Edge Case Warnings</span>
+    </div>
+  </div>
+
+  <!-- Section 1: Class Overview -->
+  <section>
+    <div class="section-header">
+      <span class="section-num">01 —</span>
+      <h2>Class Overview</h2>
+    </div>
+
+    <div class="class-card">
+      <div class="class-header">
+        <span class="class-name">EngagementEngine</span>
+        <span class="badge badge-class">class</span>
+      </div>
+      <div class="class-body">
+        <p class="class-desc">
+          A social media engagement scoring system that tracks user interaction points, applies tier classifications, 
+          handles verified user multipliers, and manages reputation penalties. Users accumulate scores through likes, 
+          comments, and shares, and are classified into tiers based on their total engagement score.
+        </p>
+
+        <div class="method-grid">
+          <div class="method-row">
+            <span class="method-sig">__init__(user_handle,<br>verified=False)</span>
+            <span class="method-desc">Initializes a new user with a handle, a starting score of 0.0, and an optional verified status.</span>
+            <span class="badge badge-method">constructor</span>
+          </div>
+          <div class="method-row">
+            <span class="method-sig">process_interaction(<br>itype, count=1)</span>
+            <span class="method-desc">Processes a like, comment, or share interaction. Applies a 1.5× multiplier for verified users. Returns True on success, False for unknown types. Raises ValueError for negative counts.</span>
+            <span class="badge badge-method">method</span>
+          </div>
+          <div class="method-row">
+            <span class="method-sig">get_tier()</span>
+            <span class="method-desc">Returns the user's current tier label based on score: "Newbie" (&lt;100), "Influencer" (100–1000), or "Icon" (&gt;1000).</span>
+            <span class="badge badge-method">method</span>
+          </div>
+          <div class="method-row">
+            <span class="method-sig">apply_penalty(<br>report_count)</span>
+            <span class="method-desc">Reduces score by 20% per report. Floors at 0. Removes verified status if report_count exceeds 10.</span>
+            <span class="badge badge-method">method</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tiers -->
+    <div class="tier-grid">
+      <div class="tier-card newbie">
+        <div class="tier-name">Newbie</div>
+        <div class="tier-range">score &lt; 100</div>
+      </div>
+      <div class="tier-card influencer">
+        <div class="tier-name">Influencer</div>
+        <div class="tier-range">100 ≤ score ≤ 1000</div>
+      </div>
+      <div class="tier-card icon">
+        <div class="tier-name">Icon</div>
+        <div class="tier-range">score &gt; 1000</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 2: Source Code -->
+  <section>
+    <div class="section-header">
+      <span class="section-num">02 —</span>
+      <h2>Source Code</h2>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <div class="code-dot"></div>
+        <span class="code-filename">engagement_engine.py</span>
+      </div>
+      <pre><span class="kw">class</span> <span class="nm">EngagementEngine</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(<span class="nb">self</span>, user_handle, verified=<span class="kw">False</span>):
+        <span class="nb">self</span>.user_handle = user_handle
+        <span class="nb">self</span>.score = <span class="nb">0.0</span>
+        <span class="nb">self</span>.verified = verified
+
+    <span class="kw">def</span> <span class="fn">process_interaction</span>(<span class="nb">self</span>, itype, count=<span class="nb">1</span>):
+        <span class="kw">if</span> count &lt; <span class="nb">0</span>: <span class="kw">raise</span> <span class="nm">ValueError</span>(<span class="st">"Negative count"</span>)
+        weights = {<span class="st">"like"</span>: <span class="nb">1</span>, <span class="st">"comment"</span>: <span class="nb">5</span>, <span class="st">"share"</span>: <span class="nb">10</span>}
+        <span class="kw">if</span> itype <span class="kw">not in</span> weights: <span class="kw">return</span> <span class="kw">False</span>
+
+        points = weights[itype] * count
+        <span class="kw">if</span> <span class="nb">self</span>.verified: points *= <span class="nb">1.5</span>
+        <span class="nb">self</span>.score += points
+        <span class="kw">return</span> <span class="kw">True</span>
+
+    <span class="kw">def</span> <span class="fn">get_tier</span>(<span class="nb">self</span>):
+        <span class="kw">if</span> <span class="nb">self</span>.score &lt; <span class="nb">100</span>: <span class="kw">return</span> <span class="st">"Newbie"</span>
+        <span class="kw">if</span> <span class="nb">self</span>.score &lt;= <span class="nb">1000</span>: <span class="kw">return</span> <span class="st">"Influencer"</span>
+        <span class="kw">return</span> <span class="st">"Icon"</span>
+
+    <span class="kw">def</span> <span class="fn">apply_penalty</span>(<span class="nb">self</span>, report_count):
+        <span class="kw">if</span> report_count &gt; <span class="nb">10</span>: <span class="nb">self</span>.verified = <span class="kw">False</span>
+        reduction = <span class="nb">self</span>.score * (<span class="nb">0.20</span> * report_count)
+        <span class="nb">self</span>.score = <span class="nb">max</span>(<span class="nb">0</span>, <span class="nb">self</span>.score - reduction)</pre>
+    </div>
+  </section>
+
+  <!-- Section 3: Test Results -->
+  <section>
+    <div class="section-header">
+      <span class="section-num">03 —</span>
+      <h2>Test Results</h2>
+    </div>
+
+    <div class="test-group">
+      <div class="test-group-title">Initialization</div>
+      <div class="test-list">
+        <div class="test-item" style="animation-delay:0.05s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_init_defaults</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.1s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_init_verified</span>
+          <span class="test-status">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <div class="test-group-title">process_interaction</div>
+      <div class="test-list">
+        <div class="test-item" style="animation-delay:0.12s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_like_adds_correct_points</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.14s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_comment_adds_correct_points</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.16s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_share_adds_correct_points</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.18s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_multiple_count</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.20s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_verified_multiplier</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.22s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_verified_share_multiplier</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.24s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_invalid_interaction_type_returns_false</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.26s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_valid_interaction_returns_true</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.28s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_negative_count_raises_error</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.30s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_zero_count</span>
+          <span class="test-status">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <div class="test-group-title">get_tier</div>
+      <div class="test-list">
+        <div class="test-item" style="animation-delay:0.32s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_tier_newbie_at_zero</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.34s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_tier_newbie_below_100</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.36s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_tier_influencer_at_100</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.38s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_tier_influencer_at_1000</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.40s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_tier_icon_above_1000</span>
+          <span class="test-status">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="test-group">
+      <div class="test-group-title">apply_penalty</div>
+      <div class="test-list">
+        <div class="test-item" style="animation-delay:0.42s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_penalty_reduces_score</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.44s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_penalty_score_floor_is_zero</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.46s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_penalty_over_10_reports_removes_verified</span>
+          <span class="test-status">PASS</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.48s">
+          <div class="test-dot warn"></div>
+          <span class="test-name">test_penalty_exactly_10_reports_keeps_verified</span>
+          <span class="test-status warn">PASS ⚠</span>
+        </div>
+        <div class="test-item" style="animation-delay:0.50s">
+          <div class="test-dot"></div>
+          <span class="test-name">test_penalty_zero_reports_no_change</span>
+          <span class="test-status">PASS</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+        <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--muted);">Test Coverage</span>
+        <span style="font-family:'DM Mono',monospace; font-size:12px; color:var(--pass);">25 / 25 passing</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:100%"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Notes & Warnings -->
+  <section>
+    <div class="section-header">
+      <span class="section-num">04 —</span>
+      <h2>Notes &amp; Edge Cases</h2>
+    </div>
+
+    <div class="issue-list">
+      <div class="issue-card">
+        <div class="issue-stripe"></div>
+        <div class="issue-body">
+          <div class="issue-title">⚠ apply_penalty wipes score at 5+ reports</div>
+          <div class="issue-desc">
+            Since the reduction formula is <code style="font-family:'DM Mono',monospace; color:var(--accent2)">score × (0.20 × report_count)</code>, 
+            any report_count ≥ 5 produces a multiplier ≥ 1.0, meaning the full score is removed. 
+            The <code style="font-family:'DM Mono',monospace; color:var(--accent2)">max(0, ...)</code> floor saves it from going negative, 
+            but confirm this is the intended behavior — it may be more appropriate to cap the reduction at 100%.
+          </div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-stripe"></div>
+        <div class="issue-body">
+          <div class="issue-title">⚠ Verification boundary at exactly 10 reports</div>
+          <div class="issue-desc">
+            The condition <code style="font-family:'DM Mono',monospace; color:var(--accent2)">report_count > 10</code> means exactly 10 reports 
+            will NOT strip verified status, only 11+. This is a strict greater-than check — 
+            verify whether the intended boundary should be <code style="font-family:'DM Mono',monospace; color:var(--accent2)">>= 10</code> instead.
+          </div>
+        </div>
+      </div>
+      <div class="issue-card">
+        <div class="issue-stripe info"></div>
+        <div class="issue-body">
+          <div class="issue-title info">ℹ File naming conflict</div>
+          <div class="issue-desc">
+            During setup, the source file was originally named <code style="font-family:'DM Mono',monospace; color:var(--accent)">code.py</code>, 
+            which conflicts with Python's built-in <code style="font-family:'DM Mono',monospace; color:var(--accent)">code</code> module. 
+            This was resolved by renaming the file to <code style="font-family:'DM Mono',monospace; color:var(--accent)">engagement_engine.py</code>. 
+            Always avoid naming files after built-in Python modules.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p class="footer-text">EngagementEngine &nbsp;·&nbsp; CS325 Spring 2026 &nbsp;·&nbsp; Generated Report</p>
+  </footer>
+
+</div>
+</body>
+</html>
