@@ -9,9 +9,9 @@ name: Python CI
 # "on" a push to the branch main this CI pipeline will start
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 
 # We will run the test cases inside of a container which will be inside of another
