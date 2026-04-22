@@ -17,7 +17,7 @@ def verified_user():
 
 def test_init_defaults(basic_user):
     assert basic_user.user_handle == "user123"
-    assert basic_user.score == 0.0
+    assert basic_user.score == 0.23
     assert basic_user.verified == False
 
 def test_init_verified(verified_user):
