@@ -22,7 +22,8 @@ jobs:
   test-in-container:
     runs-on: ubuntu-latest
     container:
-      image: timroge/pyt:v0.1
+      image: timroge/quiz_ci:latest
+
       # all dependencies (pytest) are already in this docker image hosted as public image in YOUR Docker Hub account
 
     steps:
